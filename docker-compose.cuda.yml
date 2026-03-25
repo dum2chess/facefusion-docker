@@ -1,21 +1,32 @@
 services:
- facefusion-cuda:
-  build:
-   context: .
-   dockerfile: Dockerfile.cuda
-  command: [ 'python', 'facefusion.py', 'run', '--execution-providers', 'cuda' ]
-  volumes:
-  - .assets:/facefusion/.assets
-  - .caches:/facefusion/.caches
-  - .jobs:/facefusion/.jobs
-  - '/mnt/c/Users/dadms/content_analyser.py:/facefusion/facefusion/content_analyser.py'
-  - '/mnt/c/Users/dadms/core.py:/facefusion/facefusion/core.py'
-  ports:
-  - 7870:7860
-  deploy:
-   resources:
-    reservations:
-     devices:
-     - driver: nvidia
-       count: all
-       capabilities: [ gpu, video ]
+  facefusion-cuda:
+    build:
+      context: .
+      dockerfile: Dockerfile.cuda
+      args:
+        # This passes the version from your host/env to the Dockerfile
+        - FACEFUSION_VERSION=${FACEFUSION_VERSION:-master}
+    command:
+      - python3
+      - facefusion.py
+      - run
+      - '--execution-providers'
+      - cuda
+    volumes:
+      - '.assets:/facefusion/.assets'
+      - '.caches:/facefusion/.caches'
+      - '.jobs:/facefusion/.jobs'
+      # Mounting specific files from your Windows path (WSL)
+      - '/mnt/c/Users/dadms/content_analyser.py:/facefusion/facefusion/content_analyser.py'
+      - '/mnt/c/Users/dadms/core.py:/facefusion/facefusion/core.py'
+    ports:
+      - '7870:7860'
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities:
+                - gpu
+                - video
