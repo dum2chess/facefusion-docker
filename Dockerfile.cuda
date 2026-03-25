@@ -11,7 +11,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /facefusion
 
-# Install system dependencies
+# Update and install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.12 \
     python3-pip \
@@ -23,12 +23,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Fix for Git ownership security
+# Fix for Git "dubious ownership" security
 RUN git config --global --add safe.directory /facefusion
 
-# FIXED: Added the full repository path
-RUN git clone https://github.com --branch ${FACEFUSION_VERSION} --single-branch . || \
-    git clone https://github.com --branch master --single-branch .
+# FIXED: You must clone the core code from the facefusion/facefusion repository
+# Your own repo (facefusion-docker) is for the Docker config, not the app code.
+RUN git clone https://github.com/facefusion/facefusion --branch ${FACEFUSION_VERSION} --single-branch .
 
 # Install application dependencies
 RUN pip install --no-cache-dir -r requirements.txt
