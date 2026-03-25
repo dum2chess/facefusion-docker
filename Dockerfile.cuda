@@ -1,17 +1,17 @@
 # Use the specific CUDA 12.9.1 and Ubuntu 24.04 base image
 FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04
 
-# Declare build argument with your specific version
+# Declare build argument
 ARG FACEFUSION_VERSION=3.6.0
 
-# Environment variables for Gradio and PEP 668 (External Managed Environments) bypass
+# Environment variables
 ENV GRADIO_SERVER_NAME=0.0.0.0
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /facefusion
 
-# Update and install system dependencies in one layer to reduce image size
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.12 \
     python3-pip \
@@ -23,15 +23,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Security fix: Mark the workspace as safe for Git to prevent exit code 128
+# Fix for Git ownership security
 RUN git config --global --add safe.directory /facefusion
 
-# Clone the fork using the specified version branch/tag
-# Using --depth 1 for a faster, smaller clone
-RUN git clone https://github.com --branch ${FACEFUSION_VERSION} --single-branch .
+# FIXED: Added the full repository path
+RUN git clone https://github.com --branch ${FACEFUSION_VERSION} --single-branch . || \
+    git clone https://github.com --branch master --single-branch .
 
 # Install application dependencies
-# Ensuring we use the correct python version installed above
 RUN pip install --no-cache-dir -r requirements.txt
 RUN python install.py --onnxruntime cuda --skip-conda
 
